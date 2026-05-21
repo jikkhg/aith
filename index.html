@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เอาง่ายๆ AI Portal - ปัญญาประดิษฐ์อัจฉริยะ ย่อยเรื่องยากให้เข้าใจง่าย</title>
+    <meta name="description" content="พอร์ทัลเว็บไซต์เอาง่ายๆ AI ผู้ช่วยสนทนาอัจฉริยะที่ช่วยย่อยและสรุปทุกข้อมูลยากๆ ให้เข้าใจง่ายและใช้งานได้ทันที">
+    
+    <!-- Google Fonts: Inter (English) & Sarabun (Thai) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar แถบประวัติการสนทนา (จะควบคุมการเปิด/ปิดและแสดงเมื่ออยู่ในหน้าแชท) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-face-smile-wink logo-icon"></i>
+                    <span>เอาง่ายๆ <span class="accent-text">AI</span></span>
+                </div>
+                <button class="btn-toggle-sidebar" id="btn-toggle-sidebar-mobile" title="ปิดเมนู">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <button class="btn-new-chat" id="btn-new-chat">
+                <i class="fa-solid fa-plus"></i>
+                <span>สร้างแชทใหม่</span>
+            </button>
+            
+            <div class="chat-history-section">
+                <h3 class="section-title">การสนทนาที่ผ่านมา</h3>
+                <div class="chat-history-list" id="chat-history-list">
+                    <!-- ประวัติแชทจะถูกใส่เข้ามาด้วย JS -->
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="btn-sidebar-action" id="btn-settings" title="ตั้งค่า API & ระบบ">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>การตั้งค่า API</span>
+                </button>
+                <div class="api-status">
+                    <span class="status-indicator online" id="status-indicator"></span>
+                    <span id="status-text">พร้อมใช้งาน</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace พื้นที่แสดงผลการทำงาน -->
+        <main class="chat-workspace">
+            <!-- Navigation Bar แถบเมนูด้านบนของเว็บไซต์ -->
+            <nav class="navbar-portal">
+                <div class="nav-left">
+                    <button class="btn-toggle-sidebar-desktop" id="btn-toggle-sidebar-desktop" title="ประวัติการสนทนา">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                    <div class="portal-brand">
+                        <span class="portal-title">เอาง่ายๆ <span class="badge badge-info">v1.0</span></span>
+                    </div>
+                </div>
+                
+                <!-- แถบเมนูหน้าเว็บตามความต้องการของผู้ใช้ -->
+                <div class="nav-links-container">
+                    <button class="nav-link active" data-tab="tab-home">
+                        <i class="fa-solid fa-comments"></i> หน้าแรก (แชทคุย)
+                    </button>
+                    <button class="nav-link" data-tab="tab-services">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> บริการของเรา
+                    </button>
+                    <button class="nav-link" data-tab="tab-about">
+                        <i class="fa-solid fa-circle-info"></i> เกี่ยวกับเรา
+                    </button>
+                    <button class="nav-link" data-tab="tab-contact">
+                        <i class="fa-solid fa-address-book"></i> ติดต่อเรา
+                    </button>
+                    <button class="nav-link" data-tab="tab-liquid-glass">
+                        <i class="fa-solid fa-wand-magic-sparkles text-accent"></i> Liquid Glass ✨
+                    </button>
+                </div>
+                
+                <div class="nav-right">
+                    <button class="btn-action-header" id="btn-export-chat" title="ส่งออกแชท (Markdown)">
+                        <i class="fa-solid fa-download"></i>
+                    </button>
+                    <button class="btn-action-header" id="btn-clear-chat" title="ล้างข้อความห้องนี้">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- 1. SECTION: HOME (หน้าแรก / คุยกับ AI) -->
+            <section class="portal-section active" id="tab-home">
+                <!-- Chat Info Bar -->
+                <div class="chat-info-bar">
+                    <div class="chat-info-title-wrapper">
+                        <i class="fa-regular fa-comments"></i>
+                        <span id="active-chat-title" class="chat-info-title">ห้องสนทนาใหม่</span>
+                    </div>
+                    <div class="chat-info-model-wrapper">
+                        <i class="fa-solid fa-robot"></i>
+                        <span id="active-chat-model" class="chat-info-model">aongai-ngai-ai-v1.0</span>
+                    </div>
+                </div>
+
+                <div class="chat-viewport" id="chat-viewport">
+                    <!-- Welcome View หน้าจอเริ่มต้น -->
+                    <div class="welcome-container" id="welcome-container">
+                        <div class="welcome-hero animate-fade-in">
+                            <div class="welcome-logo">
+                                <i class="fa-solid fa-face-smile-wink animate-pulse"></i>
+                            </div>
+                            <h1>สวัสดีครับ! ผมคือ <span class="gradient-text">เอาง่ายๆ AI</span></h1>
+                            <p class="subtitle">ระบบสนทนาอัจฉริยะที่ช่วยย่อยทุกเรื่องยากๆ ให้เข้าใจและทำตามได้**ง่ายที่สุด** มีอะไรให้ผมช่วยเหลือในวันนี้ไหมครับ?</p>
+                        </div>
+
+                        <div class="suggestion-grid animate-slide-up">
+                            <div class="suggestion-card" data-prompt="ช่วยเขียนคำกล่าวอวยพรวันเกิดผู้ใหญ่แบบเป็นทางการและดูสุภาพเรียบร้อยหน่อยครับ">
+                                <i class="fa-solid fa-cake-candles card-icon pink"></i>
+                                <h3>อวยพรวันเกิดสุภาพ</h3>
+                                <p>ช่วยเขียนคำกล่าวอวยพรวันเกิดผู้ใหญ่แบบสุภาพ...</p>
+                            </div>
+                            <div class="suggestion-card" data-prompt="ช่วยอธิบายทฤษฎีควอนตัมฟิสิกส์ให้เด็กประถมเข้าใจง่ายๆ โดยใช้การเปรียบเทียบในชีวิตประจำวัน">
+                                <i class="fa-solid fa-lightbulb card-icon gold"></i>
+                                <h3>อธิบายเรื่องยากให้ง่าย</h3>
+                                <p>ช่วยอธิบายเรื่องฟิสิกส์ควอนตัมให้เด็กประถมเข้าใจ...</p>
+                            </div>
+                            <div class="suggestion-card" data-prompt="เขียนสคริปต์ Python ในการดึงข้อมูลราคาทองคำวันนี้จากหน้าเว็บ และส่งแจ้งเตือนผ่าน Line API">
+                                <i class="fa-solid fa-code card-icon blue"></i>
+                                <h3>ช่วยเขียนโค้ดและแอป</h3>
+                                <p>เขียน Python ในการแจ้งราคาทองคำวันนี้ผ่านไลน์...</p>
+                            </div>
+                            <div class="suggestion-card" data-prompt="ช่วยวางแผนทริปท่องเที่ยวเที่ยวเชียงใหม่ 3 วัน 2 คืน ช่วงเดือนธันวาคม สำหรับครอบครัว เน้นธรรมชาติและร้านอาหารอร่อย">
+                                <i class="fa-solid fa-compass card-icon green"></i>
+                                <h3>วางแผนทริปเที่ยว</h3>
+                                <p>จัดทริปเที่ยวเชียงใหม่ 3 วัน 2 คืน เน้นธรรมชาติ...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- รายการแชทจริง -->
+                    <div class="messages-list" id="messages-list"></div>
+                    
+                    <!-- โหลด AI กำลังตอบ -->
+                    <div class="typing-indicator-wrapper hidden" id="typing-indicator">
+                        <div class="avatar ai-avatar">
+                            <i class="fa-solid fa-wind"></i>
+                        </div>
+                        <div class="indicator-bubble">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Footer แชท -->
+                <footer class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <textarea class="chat-input" id="chat-input" rows="1" placeholder="พิมพ์คำถามของคุณเพื่อคุยกับ เอาง่ายๆ AI... (Shift + Enter เพื่อขึ้นบรรทัดใหม่)"></textarea>
+                        <button class="btn-send disabled" id="btn-send" disabled title="ส่งข้อความ">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-info">
+                        <span>โมเดลเริ่มต้น: aongai-ngai-ai-v1.0 • ข้อมูลปลอดภัยบันทึกใน Local Storage</span>
+                    </div>
+                </footer>
+            </section>
+
+            <!-- 2. SECTION: SERVICES (หน้าบริการ AI) -->
+            <section class="portal-section hidden" id="tab-services">
+                <div class="section-content-container">
+                    <div class="section-header-area">
+                        <i class="fa-solid fa-screwdriver-wrench section-header-icon gradient-glow"></i>
+                        <h2>บริการจาก เอาง่ายๆ AI</h2>
+                        <p class="section-subtitle">สัมผัสฟีเจอร์อันชาญฉลาดที่พร้อมรองรับทุกไอเดียและช่วยให้ทุกงานของคุณกลายเป็นเรื่องง่ายๆ</p>
+                    </div>
+
+                    <div class="services-grid">
+                        <div class="service-detail-card">
+                            <div class="service-icon-box blue">
+                                <i class="fa-solid fa-pen-nib"></i>
+                            </div>
+                            <h3>สร้างสรรค์เนื้อหา (Content Creation)</h3>
+                            <p>ช่วยรังสรรค์บทความ เขียนอีเมลธุรกิจ คำกล่าวอวยพร โพสต์โซเชียลมีเดีย หรือคิดคำโฆษณาที่ถูกต้องตามหลักไวยากรณ์ไทย สะท้อนน้ำเสียงที่เป็นมิตรหรือเป็นทางการได้ตามต้องการ</p>
+                            <button class="btn-try-service" data-prompt="ช่วยเขียนโครงร่างบทความสำหรับบล็อกเรื่อง 'แนวโน้มเทคโนโลยีปัญญาประดิษฐ์ในประเทศไทยปี 2026' ให้หน่อยครับ">ทดลองใช้บริการ <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+
+                        <div class="service-detail-card">
+                            <div class="service-icon-box pink">
+                                <i class="fa-solid fa-language"></i>
+                            </div>
+                            <h3>แปลภาษาและปรับไวยากรณ์ (Translation)</h3>
+                            <p>แปลเอกสาร ข้อความ และประโยคต่างๆ ระหว่างภาษาไทยและภาษาต่างประเทศได้อย่างถูกต้อง ลื่นไหล และตรงตามบริบทวัฒนธรรมไทย ไม่แข็งเหมือนโปรแกรมแปลภาษาทั่วไป</p>
+                            <button class="btn-try-service" data-prompt="ช่วยแปลประโยคภาษาอังกฤษนี้เป็นภาษาไทยให้สุภาพเรียบร้อยหน่อย: 'We appreciate your business and look forward to partnering with you on future projects.'">ทดลองใช้บริการ <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+
+                        <div class="service-detail-card">
+                            <div class="service-icon-box gold">
+                                <i class="fa-solid fa-laptop-code"></i>
+                            </div>
+                            <h3>ผู้ช่วยเขียนโค้ดอัจฉริยะ (Coding Assistant)</h3>
+                            <p>ช่วยแนะนำแนวทางการเขียนโปรแกรม ค้นหาบั๊ก (Debugging) อธิบายการทำงานของโค้ด หรือสร้างตัวอย่างสคริปต์ต่างๆ ในภาษา Python, JavaScript, HTML, SQL ได้อย่างรวดเร็ว</p>
+                            <button class="btn-try-service" data-prompt="เขียนฟังก์ชัน JavaScript ค้นหาเลขเฉพาะ (Prime Numbers) ตั้งแต่ 1 ถึง 100 และเขียนคอมเมนต์อธิบายแต่ละบรรทัด">ทดลองใช้บริการ <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+
+                        <div class="service-detail-card">
+                            <div class="service-icon-box green">
+                                <i class="fa-solid fa-align-left"></i>
+                            </div>
+                            <h3>สรุปความและวิเคราะห์บทความ (Summarization)</h3>
+                            <p>สรุปใจความสำคัญของเอกสาร รายงานการประชุม หรือข้อมูลขนาดยาว ให้เหลือเฉพาะประเด็นที่สำคัญและกระชับ ช่วยประหยัดเวลาในการทำความเข้าใจข้อมูลปริมาณมาก</p>
+                            <button class="btn-try-service" data-prompt="ช่วยสรุปใจความสำคัญของแนวคิด 'เศรษฐกิจพอเพียง' ใน 5 บรรทัดให้เข้าใจง่ายที่สุด">ทดลองใช้บริการ <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. SECTION: ABOUT US (หน้าเกี่ยวกับเรา) -->
+            <section class="portal-section hidden" id="tab-about">
+                <div class="section-content-container">
+                    <div class="section-header-area">
+                        <i class="fa-solid fa-circle-info section-header-icon gradient-glow"></i>
+                        <h2>เกี่ยวกับ เอาง่ายๆ AI</h2>
+                        <p class="section-subtitle">โมเดลปัญญาประดิษฐ์ที่ถูกสร้างมาเพื่อลดความซับซ้อนและเพิ่มความเข้าใจ</p>
+                    </div>
+
+                    <div class="about-main-layout">
+                        <div class="about-text-card">
+                            <h3>ความเป็นมาของการย่อยข้อมูลให้เป็นเรื่องง่าย</h3>
+                            <p><strong>เอาง่ายๆ AI</strong> คือโครงการพัฒนาโมเดลภาษาขนาดใหญ่ (Large Language Model) ที่ถูกออกแบบมาเพื่อทำความเข้าใจและช่วยเหลือผู้ใช้ในการย่อยเนื้อหาที่ซับซ้อน เช่น โค้ดโปรแกรมมิ่ง ข้อมูลวิชาการ หรือสคริปต์ธุรกิจ ให้กระชับ สั้น และเข้าใจง่ายที่สุด</p>
+                            <p>ด้วยสถาปัตยกรรมประสิทธิภาพสูง ทำให้โมเดลรุ่น **v1.0** นี้สามารถวิเคราะห์ แปลงภาษา อธิบาย และลดความยากในการทำงานประจำวันของทุกคนได้อย่างลงตัวและเป็นธรรมชาติที่สุด</p>
+                        </div>
+                        
+                        <div class="partner-section">
+                            <h3>สมาคมและเทคโนโลยีผู้อยู่เบื้องหลัง</h3>
+                            <div class="partner-grid">
+                                <a href="https://aieat.or.th/" target="_blank" class="partner-card">
+                                    <div class="partner-avatar"><i class="fa-solid fa-building-ngo"></i></div>
+                                    <h4>AIEAT</h4>
+                                    <p>สมาคมผู้ประกอบการปัญญาประดิษฐ์ประเทศไทย (Artificial Intelligence Entrepreneur Association of Thailand)</p>
+                                </a>
+                                <a href="https://iapp.co.th/" target="_blank" class="partner-card">
+                                    <div class="partner-avatar"><i class="fa-solid fa-microchip"></i></div>
+                                    <h4>iApp Technology</h4>
+                                    <p>บริษัท ไอแอพพ์เทคโนโลยี จำกัด ผู้ให้บริการโซลูชันด้านเทคโนโลยี AI และปัญญาประดิษฐ์ชั้นนำ</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. SECTION: CONTACT (หน้าติดต่อเรา) -->
+            <section class="portal-section hidden" id="tab-contact">
+                <div class="section-content-container">
+                    <div class="section-header-area">
+                        <i class="fa-solid fa-address-book section-header-icon gradient-glow"></i>
+                        <h2>ติดต่อและแหล่งข้อมูลอ้างอิง</h2>
+                        <p class="section-subtitle">ช่องทางการติดต่อสอบถามเกี่ยวกับการพัฒนาเว็บไซต์บูรณาการ API หรือข้อมูลทรัพยากรผู้พัฒนา</p>
+                    </div>
+
+                    <div class="contact-layout">
+                        <!-- กล่องฟอร์มติดต่อจำลองแบบพรีเมียม -->
+                        <div class="contact-form-card">
+                            <h3>ส่งข้อความหาเรา</h3>
+                            <form id="contact-portal-form" onsubmit="event.preventDefault(); handleContactSubmit();">
+                                <div class="form-group">
+                                    <label for="contact-name">ชื่อของคุณ</label>
+                                    <input type="text" id="contact-name" placeholder="ระบุชื่อ-นามสกุลของคุณ" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-email">อีเมลติดต่อ</label>
+                                    <input type="email" id="contact-email" placeholder="example@domain.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-message">ข้อความที่ต้องการติดต่อ</label>
+                                    <textarea id="contact-message" rows="4" placeholder="พิมพ์ข้อความของคุณที่นี่..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+                                    <i class="fa-solid fa-paper-plane"></i> ส่งข้อความติดต่อ
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- กล่องลิงก์อ้างอิงของระบบ -->
+                        <div class="resources-info-card">
+                            <h3>แหล่งข้อมูลที่เป็นประโยชน์ (Resources)</h3>
+                            <ul class="resources-list">
+                                <li>
+                                    <a href="https://openthaigpt.aieat.or.th/" target="_blank">
+                                        <div class="resource-icon"><i class="fa-solid fa-book"></i></div>
+                                        <div>
+                                            <strong>เอาง่ายๆ AI Documentation</strong>
+                                            <span>อ่านเอกสารและคู่มือการใช้งาน เอาง่ายๆ AI API อย่างละเอียด</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://aieat.or.th/" target="_blank">
+                                        <div class="resource-icon"><i class="fa-solid fa-globe"></i></div>
+                                        <div>
+                                            <strong>สมาคม AIEAT (AIEAT Website)</strong>
+                                            <span>เยี่ยมชมสมาคมผู้ประกอบการปัญญาประดิษฐ์ประเทศไทย</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="https://iapp.co.th/" target="_blank">
+                                        <div class="resource-icon"><i class="fa-solid fa-network-wired"></i></div>
+                                        <div>
+                                            <strong>บริษัท iApp Technology</strong>
+                                            <span>ผู้ร่วมริเริ่มและร่วมพัฒนาโครงการ เอาง่ายๆ AI</span>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. SECTION: LIQUID GLASS (หน้าทดลองเล่น Visual Effect) -->
+            <section class="portal-section hidden" id="tab-liquid-glass">
+                <div class="playground-layout-container">
+                    <!-- Left Column: Settings Control Panel -->
+                    <div class="playground-sidebar-controls animate-slide-up">
+                        <div class="control-header">
+                            <i class="fa-solid fa-sliders"></i>
+                            <h3>แผงควบคุมเอฟเฟกต์ (Controls)</h3>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="ctrl-mode">โหมดการหักเหแสง (Refraction Mode)</label>
+                            <select id="ctrl-mode" class="control-select">
+                                <option value="shader" selected>shader (WebGL - Physical Refraction)</option>
+                                <option value="standard">standard (CSS Backdrop & SVG Displacement)</option>
+                                <option value="polar">polar (SVG Spherical Lens Distortion)</option>
+                                <option value="prominent">prominent (Specular Frosted Acrylic)</option>
+                            </select>
+                            <small class="help-desc">shader ให้ความถูกต้องของฟิสิกส์การสะท้อนแสงสูงสุด</small>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-label-row">
+                                <label for="ctrl-scale">ความแรงในการเบนแสง (Displacement Scale)</label>
+                                <span id="val-scale" class="slider-val">70</span>
+                            </div>
+                            <input type="range" id="ctrl-scale" min="0" max="150" value="70" class="control-slider">
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-label-row">
+                                <label for="ctrl-blur">ระดับความฝ้าของกระจก (Frosty Blur)</label>
+                                <span id="val-blur" class="slider-val">0.0625</span>
+                            </div>
+                            <input type="range" id="ctrl-blur" min="0.0" max="0.25" step="0.005" value="0.0625" class="control-slider">
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-label-row">
+                                <label for="ctrl-sat">ความอิ่มตัวของสีกระจก (Saturation)</label>
+                                <span id="val-sat" class="slider-val">140%</span>
+                            </div>
+                            <input type="range" id="ctrl-sat" min="50" max="200" value="140" class="control-slider">
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-label-row">
+                                <label for="ctrl-aberration">การเหลื่อมสีของแสง (Chromatic Aberration)</label>
+                                <span id="val-aberration" class="slider-val">2</span>
+                            </div>
+                            <input type="range" id="ctrl-aberration" min="0" max="10" step="1" value="2" class="control-slider">
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-label-row">
+                                <label for="ctrl-elasticity">ความยืดหยุ่นของผิวเหลว (Elasticity)</label>
+                                <span id="val-elasticity" class="slider-val">0.15</span>
+                            </div>
+                            <input type="range" id="ctrl-elasticity" min="0.05" max="0.60" step="0.01" value="0.15" class="control-slider">
+                            <small class="help-desc">0 = แข็งตึงไร้ความหน่วง, ค่าสูงขึ้น = ผิวเด้งยืดหยุ่นแบบของเหลว</small>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-label-row">
+                                <label for="ctrl-radius">ความโค้งมนของกระจก (Corner Radius)</label>
+                                <span id="val-radius" class="slider-val">18px</span>
+                            </div>
+                            <input type="range" id="ctrl-radius" min="0" max="60" value="18" class="control-slider">
+                        </div>
+
+                        <div class="control-group-row">
+                            <div class="control-checkbox-wrapper">
+                                <input type="checkbox" id="ctrl-light" class="control-checkbox">
+                                <label for="ctrl-light">เปิดกระจกบนพื้นหลังสว่าง (Over Light)</label>
+                            </div>
+                        </div>
+
+                        <div class="control-group" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 15px;">
+                            <label for="ctrl-bg">เปลี่ยนภาพพื้นหลังจำลอง (Showcase Background)</label>
+                            <select id="ctrl-bg" class="control-select">
+                                <option value="cyber-mesh" selected>Abstract Neon Cyber Mesh (แนะนำ)</option>
+                                <option value="neon-blobs">Vibrant Floating Liquid Blobs</option>
+                                <option value="particle-grid">Cyberpunk High-Contrast Grid</option>
+                                <option value="sunset-gradient">Gorgeous Warm Sunset Fluid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Interactive Sandbox Viewport -->
+                    <div class="playground-sandbox-viewport">
+                        <div class="playground-background cyber-mesh" id="playground-viewport-bg">
+                            <!-- Background Neon circles for fluid blobs rendering -->
+                            <div class="bg-neon-blob blob-cyan"></div>
+                            <div class="bg-neon-blob blob-pink"></div>
+                            <div class="bg-neon-blob blob-gold"></div>
+
+                            <!-- Showcase Title overlay -->
+                            <div class="playground-intro-overlay">
+                                <span class="badge badge-info">Interactive Laboratory</span>
+                                <h2>ห้องทดลองกระจกเหลว (Liquid Glass Lab)</h2>
+                                <p>เลื่อนเมาส์ผ่านชิ้นส่วนกระจกด้านล่างเพื่อทดสอบการหักเหแสง Specular dynamic highlight และความยืดหยุ่น</p>
+                            </div>
+
+                            <!-- Layout Grid of interactive elements -->
+                            <div class="playground-grid-showcase">
+                                <!-- 1. Glass Card Showcase (Supports arbitrary children) -->
+                                <div id="playground-glass-card" class="showcase-element-card">
+                                    <div class="glass-card-header">
+                                        <div class="dot-indicator red"></div>
+                                        <div class="dot-indicator yellow"></div>
+                                        <div class="dot-indicator green"></div>
+                                        <span class="card-tag">Arbitrary Children</span>
+                                    </div>
+                                    <h3>กล่องกระจกอัจฉริยะ</h3>
+                                    <p>รองรับการบรรจุเนื้อหาแบบ **Arbitrary Children** ได้ทุกรูปแบบ ข้อความยังคงความคมชัดและอ่านง่าย (Pixel-Perfect Text Rendering)</p>
+                                    <ul class="glass-feature-list">
+                                        <li><i class="fa-solid fa-check-double text-cyan"></i> หักเหพื้นหลังสอดคล้องตามฟิสิกส์จริง</li>
+                                        <li><i class="fa-solid fa-check-double text-cyan"></i> ขอบไฮไลต์ Apple spec highlight</li>
+                                        <li><i class="fa-solid fa-check-double text-cyan"></i> ปรับระดับความโค้ง Corner radius อิสระ</li>
+                                    </ul>
+                                </div>
+
+                                <!-- 2. Glass Button Example -->
+                                <div class="showcase-element-wrapper centered">
+                                    <span class="element-label">Button Example</span>
+                                    <button id="playground-glass-btn" class="showcase-element-btn" onclick="showToast('ปุ่มกระจกเหลวถูกกดคลิกแล้ว!', 'success')">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-pink animate-pulse"></i>
+                                        <span>Click Me (ปุ่มกระจก)</span>
+                                    </button>
+                                </div>
+
+                                <!-- 3. Mouse Container Example (Bends when tracking mouse on parent container) -->
+                                <div class="showcase-element-wrapper" id="mouse-container-wrapper">
+                                    <span class="element-label">Mouse Container Tracking (ขอบเขตสีขาว)</span>
+                                    <div id="playground-mouse-container" class="showcase-element-container">
+                                        <h4>ตอบสนองพิกัดพื้นที่ใหญ่</h4>
+                                        <p>กระจกจะบิดเบี้ยวและเบนแสงตามตำแหน่งเมาส์ที่วิ่งอยู่ใน **Parent Container** (กรอบสีขาวรอบขอบนอก)</p>
+                                        <div class="mouse-coordinates">
+                                            <i class="fa-solid fa-crosshairs"></i>
+                                            <span>เคลื่อนเมาส์ผ่านกรอบเพื่อดูความยืดหยุ่น</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Settings Modal หน้าจอป็อปอัปตั้งค่า -->
+    <div class="modal-overlay hidden" id="settings-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-gear"></i> การตั้งค่าระบบ API</h3>
+                <button class="btn-close-modal" id="btn-close-settings" title="ปิด">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="setting-api-endpoint">
+                        <span>API EndPoint URL</span>
+                        <span class="badge badge-info">ค่าเริ่มต้น</span>
+                    </label>
+                    <input type="text" id="setting-api-endpoint" placeholder="https://api.aongai-ai.com/v1/chat/completions">
+                    <small class="form-help">ใช้โปรโตคอล HTTPS ปลอดภัยของ เอาง่ายๆ AI ป้องกัน Mixed Content</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="setting-api-key">
+                        <span>API Authorization Bearer Key</span>
+                        <button class="btn-toggle-visibility" id="btn-toggle-api-key" type="button" title="ดูคีย์">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </label>
+                    <input type="password" id="setting-api-key" placeholder="Bearer W3pKiyRP8haMjk4uvCSH5vVdhEnVduse">
+                    <small class="form-help">กรอกโทเค็นสิทธิ์สำหรับโมเดล เอาง่ายๆ AI</small>
+                </div>
+
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label for="setting-model">Model Name</label>
+                        <input type="text" id="setting-model" placeholder="aongai-ngai-ai-v1.0">
+                    </div>
+                    <div class="form-group">
+                        <label for="setting-temperature">
+                            <span>Temperature: <strong id="val-temp">0.3</strong></span>
+                        </label>
+                        <input type="range" id="setting-temperature" min="0" max="1" step="0.1" value="0.3">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="setting-max-tokens">Max Response Tokens</label>
+                    <input type="number" id="setting-max-tokens" min="1" max="4096" value="2048">
+                </div>
+
+                <div class="form-group">
+                    <label for="setting-system-prompt">System Prompt (คำสั่งตั้งต้นของระบบ)</label>
+                    <textarea id="setting-system-prompt" rows="3" placeholder="ตัวอย่างเช่น: คุณคือผู้ช่วย AI แสนเป็นมิตรที่จะตอบกลับผู้ใช้ภาษาไทยอย่างสุภาพและแม่นยำ"></textarea>
+                </div>
+
+                <div class="modal-action-section">
+                    <button class="btn-secondary" id="btn-test-connection">
+                        <i class="fa-solid fa-plug"></i> ทดสอบเชื่อมต่อ API
+                    </button>
+                    <div id="test-connection-result" class="test-result"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btn-reset-settings">คืนค่าเริ่มต้น</button>
+                <button class="btn-primary" id="btn-save-settings">บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SVG Filters for Liquid Glass displacement fallback -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <!-- Standard dynamic glass filter -->
+            <filter id="liquid-glass-refract-filter-gen" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-refract-map-gen" in="SourceGraphic" in2="noise" scale="35" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="liquid-glass-refract-filter-glass-card" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-refract-map-glass-card" in="SourceGraphic" in2="noise" scale="35" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="liquid-glass-refract-filter-glass-btn" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-refract-map-glass-btn" in="SourceGraphic" in2="noise" scale="20" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="liquid-glass-refract-filter-glass-container" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-refract-map-glass-container" in="SourceGraphic" in2="noise" scale="35" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+
+            <!-- Polar Magnification Filter -->
+            <filter id="liquid-glass-polar-filter-gen" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-polar-map-gen" in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="liquid-glass-polar-filter-glass-card" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-polar-map-glass-card" in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="liquid-glass-polar-filter-glass-btn" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-polar-map-glass-btn" in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="liquid-glass-polar-filter-glass-container" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="2" result="noise" />
+                <feDisplacementMap id="liquid-glass-polar-map-glass-container" in="SourceGraphic" in2="noise" scale="40" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Main JS Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
